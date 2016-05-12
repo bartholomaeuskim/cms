@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+{% if user.is_authenticated %}
+<script type="text/javascript">location.href="/pages/index.html"</script>
+{% endif %}
+{% if form.errors %}
+<p>ID or Password is incorrect. Please ask the webmanager.</p>
+{% endif %}
+{% if next %}
+  {% if user.is_authenticated %}
+  <p>Permission denied. Please ask the webmanager.</p>
+  {% else %}
+  <p>Please login to see this page.</p>
+  {% endif %}
+{% endif %}
+
+<center>
+  <form method="post" action="{% url 'login' %}">
+  {% csrf_token %}
+    <table>
+      <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+      </tr>
+      <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+      </tr>
+    </table>
+
+    <input type="submit" value="log-in" />
+    <input type="hidden" name="next" value="{{ next }}" />
+  </form>
+</center>
+
+{% endblock %}

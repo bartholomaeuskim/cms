@@ -1,0 +1,16 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <title>{% block page_title %}CMS alpha 0.0.1{% endblock %}</title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="{% static "js/jquery-2.2.3.min.js" %}"></script>
+  </head>
+
+  <body>
+    {% block content %}{% endblock %}
+  </body>
+
+</html>
