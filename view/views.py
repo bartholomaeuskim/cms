@@ -7,7 +7,6 @@ from django import forms
 def index(request, menu_id=None):
     if not request.user.is_authenticated():
         return redirect(settings.LOGIN_URL)
-
     menu = ("eds", "arrival_date", "kaida", "sagai", "stock", "sagai_stock")
     if menu_id:
         if menu_id in menu:

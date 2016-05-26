@@ -1,11 +1,48 @@
-from openpyxl import load_workbook
+import xlrd
 import os.path
-import sqlite3, sys
+import sqlite3, sys, datetime
 
 class InputExcel:
-    def __init__(self, name):
-        wb = load_workbook(filename = name, read_only=True)
-        ws = wb["file"]
+    def __init__(self, filename):
+        self.filename = filename
+        self.header = []
+
+    def data_input(self):
+        conn = sqlite3.connect('db.sqlite3')
+        c = conn.cursor()
+        wb = xlrd.open_workbook(self.filename)
+        ws = wb.sheet_by_index(0)
+        self.header = ws.row_values(0)
+        query = self.make_query()
+        value = []
+        for i in range(1, ws.nrows):
+            pointer = 0
+            temp_list = []
+            for data in ws.row_values(i):
+                if self.header[pointer].find("date") is -1:
+                    if self.header[pointer] == 'produced_month':
+                        temp_list.append('20'+str(int(data)+100))
+                    elif type(data) is float:
+                        temp_list.append(str(int(data)))
+                    else:
+                        temp_list.append(str(data))
+                else:
+                    temp_list.append(datetime.datetime(*xlrd.xldate_as_tuple(data, wb.datemode)).isoformat())
+                pointer += 1
+            value.append(tuple(temp_list))
+        c.executemany(query, value)
+        conn.commit()
+        conn.close()
+
+    def make_query(self):
+        query = '''INSERT INTO view_vehicle('''
+        for a in self.header:
+            query = query+a+''', '''
+        query = query[:len(query)-2]+''') values('''
+        for i in range(len(self.header)):
+            query += '''?, '''
+        query = query[:len(query)-2]+''')'''
+        return query
 
 
 if __name__ == "__main__":
@@ -14,4 +51,5 @@ if __name__ == "__main__":
     elif not os.path.isfile(sys.argv[1]):
         print(sys.argv[1],"does not exist.")
     else:
-        InputExcel(sys.argv[1])
+        exe = InputExcel(sys.argv[1])
+        exe.data_input()
