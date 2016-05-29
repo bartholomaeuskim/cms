@@ -1,6 +1,24 @@
 from django.db import models
 
 # Create your models here.
+class Stock_Manager(models.Manager):
+    def stock_count(self):
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT view_code.model, count(*)
+            FROM view_code
+            INNER JOIN view_vehicle
+            ON view_vehicle.code = view_code.code
+            WHERE view_vehicle.kaida_reg_date is null
+            GROUP BY view_code.model""")
+        result_list = []
+        for row in cursor.fetchall():
+            p = self.model(model=row[0])
+            p.num_responses = row[1]
+            result_list.append(p)
+        return result_list
+
 class Vehicle(models.Model):
     vin = models.CharField(max_length=17)
     code = models.CharField(max_length=16)
@@ -22,6 +40,7 @@ class Code(models.Model):
     engine = models.CharField(max_length=20)
     transmission = models.CharField(max_length=10)
     stop_and_start = models.BooleanField(default=True)
+    objects = Stock_Manager()
 
 class Color(models.Model):
     model = models.CharField(max_length=255)
